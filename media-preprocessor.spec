@@ -1,6 +1,6 @@
 %define name        media-preprocessor
 %define release     0
-%define version     0.5
+%define version     0.6
 %define buildroot   %{_topdir}/%{name}-%{version}-root
 
 BuildRequires: cmake fuse-devel ImageMagick-devel file-devel gstreamer-devel glib2-devel
