@@ -1,0 +1,65 @@
+#! /bin/sh
+
+install()
+{
+	cp media-preprocessord /usr/bin/
+	mkdir -p /usr/lib/media-preprocessor/readers
+	cp libplugin-*.so /usr/lib/media-preprocessor/readers/
+
+	cp media-preprocessor /etc/init.d/
+
+	for i in 0 1 2 6; do
+		cd /etc/rc$i.d
+		ln -s ../init.d/media-preprocessor ./K76media-preprocessor
+	done
+
+	for i in 3 4 5; do
+		cd /etc/rc$i.d
+		ln -s ../init.d/media-preprocessor ./S26media-preprocessor
+	done
+
+	if [ ! -f media-preprocessor.conf ]; then
+cat <<EOF >media-preprocessor.conf
+square		ratio=1.00 crop=centre maxwidth_px=128 maxheight_px=128
+preview		maxwidth_px=512 maxheight_px=512
+EOF
+	fi
+	mv media-preprocessor.conf /etc/
+
+	chkconfig --add media-preprocessor
+}
+
+uninstall()
+{
+	chkconfig --del media-preprocessor >/dev/null 2>&1
+	if [ -f /etc/init.d/media-preprocessor ]; then
+		/etc/init.d/media-preprocessor stop
+		/etc/init.d/media-preprocessor restore
+	fi
+	rm -f /usr/bin/media-preprocessord >/dev/null 2>&1
+	rm -f /etc/init.d/media-preprocessor >/dev/null 2>&1
+	rm -f /etc/rc1.d/S26media-preprocessor >/dev/null 2>&1
+	for i in 0 2 3 4 5 6; do
+		rm -f /etc/rc$i.d/K76media-preprocessor >/dev/null 2>&1
+	done
+	rm -rf /usr/lib/media-preprocessor/readers
+	rm -f /etc/media-preprocessor.conf >/dev/null 2>&1
+}
+
+case "$1" in
+	install)
+		uninstall
+		echo "Installing media-preprocessor"
+		install
+		echo "Finished"
+		echo "Start with \`/etc/init.d/media-preprocessor start' or reboot"
+		;;
+	uninstall)
+		echo "Removing media-preprocessor"
+		uninstall
+		;;
+	*)
+		echo "Usage: $0 {install|uninstall}"
+		exit 1
+		;;
+esac

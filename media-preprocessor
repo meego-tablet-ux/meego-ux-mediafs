@@ -1,0 +1,102 @@
+#! /bin/bash
+#
+# chkconfig: 345 26 76
+# description: Loads indexer and thumbnailer service
+
+MANAGED_DIRS=(Documents Downloads Music Pictures Public Templates Videos)
+HOME_DIR=/home/meego
+INDEXER_HIDDEN_DIR=/.media-preprocessor
+PLUGINS_DIR=/usr/lib/media-preprocessor
+CONFIG=/etc/media-preprocessor.conf
+
+start()
+{
+	which media-preprocessord &>/dev/null || exit 1
+
+	echo "Starting media-preprocessor"
+	if ! lsmod | grep -qw fuse; then
+		echo "Loading fuse module"
+		if ! modprobe fuse >/dev/null 2>&1; then
+			echo "FAILED!"
+			exit 1
+		fi
+	fi
+
+	mkdir $HOME_DIR/.thumbnails >/dev/null 2>&1
+
+	shopt -s dotglob
+
+	for dir in "${MANAGED_DIRS[@]}"; do
+		if ! mount | grep -qw $HOME_DIR/$dir; then
+			echo "Starting in $HOME_DIR/$dir"
+			mkdir -p $INDEXER_HIDDEN_DIR/$dir >/dev/null 2>&1
+			if [[ "$(ls -A $HOME_DIR/$dir)" ]]; then
+				mkdir /tmp/media-preprocessor-$dir >/dev/null 2>&1
+				mv $HOME_DIR/$dir/* /tmp/media-preprocessor-$dir/
+			fi
+			media-preprocessord -c $CONFIG -p $PLUGINS_DIR -s $INDEXER_HIDDEN_DIR/$dir -m $HOME_DIR/$dir -t $HOME_DIR/.thumbnails
+			mv /tmp/media-preprocessor-$dir/* $HOME_DIR/$dir/ >/dev/null 2>&1
+			rm -rf /tmp/media-preprocessor-$dir >/dev/null 2>&1
+		fi
+	done
+}
+
+stop()
+{
+	for dir in "${MANAGED_DIRS[@]}"; do
+		echo "Stopping in $HOME_DIR/$dir"
+		if mount | grep -qw $HOME_DIR/$dir; then
+			fusermount -u $HOME_DIR/$dir >/dev/null 2>&1
+		fi
+	done
+
+	# FIXME do we want to unload fuse module too?
+}
+
+restore()
+{
+	if ! ps -e | grep -qw media-preproces; then
+		stop
+	fi
+
+	shopt -s dotglob
+	for dir in "${MANAGED_DIRS[@]}"; do
+		echo "Restoring $HOME_DIR/$dir"
+		if [[ "$(ls -A $INDEXER_HIDDEN_DIR/$dir)" ]]; then
+			mv $INDEXER_HIDDEN_DIR/$dir/* $HOME_DIR/$dir/
+			rm -rf $INDEXER_HIDDEN_DIR/$dir >/dev/null 2>&1
+		fi
+	done
+
+	rm -rf $INDEXER_HIDDEN_DIR
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	reload)
+		stop
+		start
+		;;
+	status)
+		#if ! ps -e | grep -qw media-preproces; then
+		#	echo "media-preprocessor is running"
+		#else
+		#	echo "media-preprocessor is NOT running"
+		#fi
+		;;
+	restore)
+		restore
+		;;
+	*)
+		echo "Usage: $0 {start|stop|reload|status|restore}"
+		exit 1
+		;;
+esac
+
+exit 0
+
