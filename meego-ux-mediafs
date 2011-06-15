@@ -3,7 +3,7 @@
 # chkconfig: 345 26 76
 # description: Loads indexer and thumbnailer service
 
-MANAGED_DIRS=(Documents Downloads Music Pictures Public Templates Videos)
+MANAGED_DIRS=(Documents Downloads Pictures Public Templates Videos)
 HOME_DIR=/home/meego
 INDEXER_HIDDEN_DIR=/.meego-ux-mediafs
 PLUGINS_DIR=/usr/lib/meego-ux-mediafs
