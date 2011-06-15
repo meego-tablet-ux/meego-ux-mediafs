@@ -12,7 +12,7 @@
 #include <glib.h>
 #include <magic.h>
 
-#define DEFAULT_PLUGIN_DIR "/usr/lib/media-preprocessor"
+#define DEFAULT_PLUGIN_DIR "/usr/lib/meego-ux-mediafs"
 
 /* #define TRY_ALL_PLUGINS */
 

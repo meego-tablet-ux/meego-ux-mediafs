@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 /*
- * Introduction to media-preprocessor reader plugins
+ * Introduction to meego-ux-mediafs reader plugins
  *
  * Reader plugins are dynamically loaded objects that can extract a bitmap
  * image from a file. The most basic kind of plugin simply opens input image
@@ -16,12 +16,12 @@
  * get_image(). See #struct plugin for more. Plugins should also implement
  * functions get_mimetypes() and get_suffixes(), but this is not required. Note
  * that if neither get_mimetypes() or get_suffixes() have been implemented,
- * depending on the configuration of media-preprocessor the plugin may be
+ * depending on the configuration of meego-ux-mediafs the plugin may be
  * completely useless.
  *
  * Mime types are the primary mean to find suitable plugin for processing a
  * file. If none of the plugins support the type, file suffix match is also
- * attempted. Depending on the configuration, media-preprocessor may try all
+ * attempted. Depending on the configuration, meego-ux-mediafs may try all
  * remaining plugins if file suffix match fails. Note that it is also possible
  * that get_image() fails.
  *
@@ -70,7 +70,7 @@
  *	Required fields: data, width, height, format, pixeltype
  *
  * Most replies have function pointer free() set. This function is called when
- * media-preprocessor is done with the data. Reply may also contain
+ * meego-ux-mediafs is done with the data. Reply may also contain
  * plugin-specific internal data. See #struct plugin_reply for more.
  */
 

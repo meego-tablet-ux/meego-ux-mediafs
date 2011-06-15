@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mount | grep media-preprocessord > /dev/null
+mount | grep meego-ux-mediafsd > /dev/null
 let is_mounted="$?"
 if [[ $is_mounted -eq 0 ]]; then
 	echo "$0: already mounted, release with \`fusermount -u /tmp/fuse-test/home/Photos'"
@@ -24,8 +24,8 @@ fi
 
 echo "$0: running..."
 if test "$GDB"; then
-	gdb --args ./media-preprocessord -f -s /tmp/fuse-test/.photos-hidden -m /tmp/fuse-test/home/Photos -t /tmp/fuse-test/home/.thumbnails -c config
+	gdb --args ./meego-ux-mediafsd -f -s /tmp/fuse-test/.photos-hidden -m /tmp/fuse-test/home/Photos -t /tmp/fuse-test/home/.thumbnails -c config
 else
 	test "$VALGRIND" && VALGRIND="valgrind $VALGRIND"
-	$VALGRIND ./media-preprocessord -f -s /tmp/fuse-test/.photos-hidden -m /tmp/fuse-test/home/Photos -t /tmp/fuse-test/home/.thumbnails -c config -p /tmp/fuse-test/plugins
+	$VALGRIND ./meego-ux-mediafsd -f -s /tmp/fuse-test/.photos-hidden -m /tmp/fuse-test/home/Photos -t /tmp/fuse-test/home/.thumbnails -c config -p /tmp/fuse-test/plugins
 fi

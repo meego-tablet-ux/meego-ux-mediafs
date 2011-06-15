@@ -5,15 +5,15 @@
 
 MANAGED_DIRS=(Documents Downloads Music Pictures Public Templates Videos)
 HOME_DIR=/home/meego
-INDEXER_HIDDEN_DIR=/.media-preprocessor
-PLUGINS_DIR=/usr/lib/media-preprocessor
-CONFIG=/etc/media-preprocessor.conf
+INDEXER_HIDDEN_DIR=/.meego-ux-mediafs
+PLUGINS_DIR=/usr/lib/meego-ux-mediafs
+CONFIG=/etc/meego-ux-mediafs.conf
 
 start()
 {
-	which media-preprocessord &>/dev/null || exit 1
+	which meego-ux-mediafsd &>/dev/null || exit 1
 
-	echo "Starting media-preprocessor"
+	echo "Starting meego-ux-mediafs"
 	if ! lsmod | grep -qw fuse; then
 		echo "Loading fuse module"
 		if ! modprobe fuse >/dev/null 2>&1; then
@@ -31,12 +31,12 @@ start()
 			echo "Starting in $HOME_DIR/$dir"
 			mkdir -p $INDEXER_HIDDEN_DIR/$dir >/dev/null 2>&1
 			if [[ "$(ls -A $HOME_DIR/$dir)" ]]; then
-				mkdir /tmp/media-preprocessor-$dir >/dev/null 2>&1
-				mv $HOME_DIR/$dir/* /tmp/media-preprocessor-$dir/
+				mkdir /tmp/meego-ux-mediafs-$dir >/dev/null 2>&1
+				mv $HOME_DIR/$dir/* /tmp/meego-ux-mediafs-$dir/
 			fi
-			media-preprocessord -c $CONFIG -p $PLUGINS_DIR -s $INDEXER_HIDDEN_DIR/$dir -m $HOME_DIR/$dir -t $HOME_DIR/.thumbnails
-			mv /tmp/media-preprocessor-$dir/* $HOME_DIR/$dir/ >/dev/null 2>&1
-			rm -rf /tmp/media-preprocessor-$dir >/dev/null 2>&1
+			meego-ux-mediafsd -c $CONFIG -p $PLUGINS_DIR -s $INDEXER_HIDDEN_DIR/$dir -m $HOME_DIR/$dir -t $HOME_DIR/.thumbnails
+			mv /tmp/meego-ux-mediafs-$dir/* $HOME_DIR/$dir/ >/dev/null 2>&1
+			rm -rf /tmp/meego-ux-mediafs-$dir >/dev/null 2>&1
 		fi
 	done
 }
@@ -84,9 +84,9 @@ case "$1" in
 		;;
 	status)
 		#if ! ps -e | grep -qw media-preproces; then
-		#	echo "media-preprocessor is running"
+		#	echo "meego-ux-mediafs is running"
 		#else
-		#	echo "media-preprocessor is NOT running"
+		#	echo "meego-ux-mediafs is NOT running"
 		#fi
 		;;
 	restore)

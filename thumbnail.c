@@ -22,7 +22,7 @@
 #define DIRNAME_FULLSCREEN_PORTRAIT	"fullscreen-portrait"
 #define DIRNAME_FULLSCREEN_LANDSCAPE	"fullscreen-landscape"
 
-#define DEFAULT_CONFFILE "/etc/media-preprocessor.conf"
+#define DEFAULT_CONFFILE "/etc/meego-ux-mediafs.conf"
 
 
 enum {

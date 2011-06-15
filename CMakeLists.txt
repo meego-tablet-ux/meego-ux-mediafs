@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(media-preprocessor C)
+project(meego-ux-mediafs C)
 
 set(CMAKE_MODULE_PATH cmake_modules)
 
@@ -20,9 +20,9 @@ add_library(mfuse STATIC mfuse.c mfuse.h)
 set_target_properties(mfuse PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
 target_link_libraries(mfuse ${fuse_LIBRARIES})
 
-add_executable(media-preprocessord main.c)
-set_target_properties(media-preprocessord PROPERTIES LINK_FLAGS "-ldl")
-target_link_libraries(media-preprocessord mfuse indexer thumbnail)
+add_executable(meego-ux-mediafsd main.c)
+set_target_properties(meego-ux-mediafsd PROPERTIES LINK_FLAGS "-ldl")
+target_link_libraries(meego-ux-mediafsd mfuse indexer thumbnail)
 
 add_library(plugin-imagemagick SHARED imagemagick.c)
 set_target_properties(plugin-imagemagick PROPERTIES COMPILE_FLAGS "-fPIC")

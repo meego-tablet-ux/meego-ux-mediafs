@@ -1,4 +1,4 @@
-%define name        media-preprocessor
+%define name        meego-ux-mediafs
 %define release     0
 %define version     0.6
 %define buildroot   %{_topdir}/%{name}-%{version}-root
@@ -52,17 +52,17 @@ EOF
 mv %{name}.conf %{buildroot}/etc/
 
 %post
-chkconfig --add media-preprocessor
+chkconfig --add meego-ux-mediafs
 if ! cat /etc/fuse.conf | grep -qw user_allow_other; then
 	echo "user_allow_other" >> /etc/fuse.conf
 fi
 
 %preun
-if [ -f /etc/init.d/media-preprocessor ]; then
-	/etc/init.d/media-preprocessor stop
-	/etc/init.d/media-preprocessor restore
+if [ -f /etc/init.d/meego-ux-mediafs ]; then
+	/etc/init.d/meego-ux-mediafs stop
+	/etc/init.d/meego-ux-mediafs restore
 fi
-chkconfig --del media-preprocessor
+chkconfig --del meego-ux-mediafs
 
 %files
 %defattr(-,root,root)
