@@ -4,7 +4,8 @@
 # description: Loads indexer and thumbnailer service
 
 MANAGED_DIRS=(Documents Downloads Pictures Public Templates Videos)
-HOME_DIR=/home/meego
+HOME_USER=meego
+HOME_DIR=/home/$HOME_USER
 INDEXER_HIDDEN_DIR=/.meego-ux-mediafs
 PLUGINS_DIR=/usr/lib/meego-ux-mediafs
 CONFIG=/etc/meego-ux-mediafs.conf
@@ -23,6 +24,9 @@ start()
 	fi
 
 	mkdir $HOME_DIR/.thumbnails >/dev/null 2>&1
+	mkdir $HOME_DIR/.thumbnails/preview >/dev/null 2>&1
+	mkdir $HOME_DIR/.thumbnails/square >/dev/null 2>&1
+	chown -R $HOME_USER:$HOME_USER $HOME_DIR/.thumbnails
 
 	shopt -s dotglob
 
