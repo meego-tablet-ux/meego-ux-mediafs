@@ -1,6 +1,6 @@
 %define name        meego-ux-mediafs
 %define release     0
-%define version     0.6
+%define version     0.0.1
 %define buildroot   %{_topdir}/%{name}-%{version}-root
 
 BuildRequires: cmake fuse-devel ImageMagick-devel file-devel gstreamer-devel glib2-devel
