@@ -28,6 +28,8 @@ start()
 	mkdir $HOME_DIR/.thumbnails >/dev/null 2>&1
 	mkdir $HOME_DIR/.thumbnails/preview >/dev/null 2>&1
 	mkdir $HOME_DIR/.thumbnails/square >/dev/null 2>&1
+	mkdir $HOME_DIR/.thumbnails/rectangle >/dev/null 2>&1
+	mkdir $HOME_DIR/.thumbnails/fullscreen >/dev/null 2>&1
 	chown -R $HOME_USER:$HOME_USER $HOME_DIR/.thumbnails
 
 	shopt -s dotglob
