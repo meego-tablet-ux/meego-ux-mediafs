@@ -7,7 +7,7 @@
 
 . /etc/init.d/functions
 
-MANAGED_DIRS=(Documents Downloads Music Pictures Public Templates Videos)
+MANAGED_DIRS=(Documents Downloads Pictures Public Templates Videos)
 HOME_USER=meego
 HOME_DIR=/home/$HOME_USER
 PLUGINS_DIR=/usr/lib/meego-ux-mediafs
