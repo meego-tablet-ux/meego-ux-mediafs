@@ -5,26 +5,99 @@
 # chkconfig: 345 26 76
 # description: Loads indexer and thumbnailer service
 
-MANAGED_DIRS=(Documents Downloads Pictures Public Templates Videos)
+. /etc/init.d/functions
+
+MANAGED_DIRS=(Documents Downloads Music Pictures Public Templates Videos)
 HOME_USER=meego
 HOME_DIR=/home/$HOME_USER
-INDEXER_HIDDEN_DIR=/.meego-ux-mediafs
 PLUGINS_DIR=/usr/lib/meego-ux-mediafs
 CONFIG=/etc/meego-ux-mediafs.conf
+MEDIAFSD_DIR="$HOME_DIR/.mediafs-mount"
+
+has_fuse_mount()
+{
+	mount | grep -q " on $1 type fuse."
+}
+
+has_bind_mount()
+{
+	mount | grep -q " on $1 type none (rw,bind)"
+}
+
+start_dir()
+{
+	local dir="$dir"
+	if ! test -d "$MEDIAFSD_DIR/$dir"; then
+		if ! mkdir "$MEDIAFSD_DIR/$dir"; then
+			failure "Mediafs mount directory creation: $dir"
+			return 1
+		fi
+		if ! chown $HOME_USER:$HOME_USER "$MEDIAFSD_DIR/$dir"; then
+			failure "Mediafs mount directory permissions: $dir"
+		fi
+		success "Mediafs mount directory creation"
+	fi
+
+	if ! has_bind_mount "$MEDIAFSD_DIR/$dir"; then
+		if ! mount -o bind,rw "$HOME_DIR/$dir" \
+				"$MEDIAFSD_DIR/$dir"; then
+			failure "Mount mediafs directory: $dir"
+			return 1
+		fi
+	fi
+
+	if ! has_fuse_mount "$HOME_DIR/$dir"; then
+		if ! su - $HOME_USER -c "meego-ux-mediafsd \
+				-c '$CONFIG' -p '$PLUGINS_DIR' \
+				-s '$MEDIAFSD_DIR/$dir' \
+				-m '$HOME_DIR/$dir' \
+				-t '$HOME_DIR/.thumbnails' >/dev/null"; then
+			failure "Mediafs mount: $dir"
+			return 1
+		fi
+	fi
+	return 0
+}
+
+stop_dir()
+{
+	local dir="$dir"
+	local ret=0
+	if has_fuse_mount "$HOME_DIR/$dir"; then
+		fusermount -u "$HOME_DIR/$dir"
+		ret=1
+	fi
+	if has_bind_mount "$MEDIAFSD_DIR/$dir"; then
+		umount "$MEDIAFSD_DIR/$dir"
+		ret=1
+	fi
+	return $ret
+}
+
 
 start()
 {
 	which meego-ux-mediafsd &>/dev/null || exit 1
 
-	echo "Starting meego-ux-mediafs"
 	if ! lsmod | grep -qw fuse; then
-		echo "Loading fuse module"
+		echo -n $"Loading FUSE module: "
 		if ! modprobe fuse >/dev/null 2>&1; then
-			echo "FAILED!"
+			failure $"FUSE module loading"
 			exit 1
+		else
+			success $"FUSE module loading"
 		fi
 	fi
 
+	if ! test -d "$MEDIAFSD_DIR"; then
+		action "Mediafs directory generation" \
+				mkdir "$MEDIAFSD_DIR"
+		action "Mediafs directory permissions" \
+				chown $HOME_USER:$HOME_USER \
+				"$MEDIAFSD_DIR"
+	fi
+
+	# TODO read directories from config
 	mkdir $HOME_DIR/.thumbnails >/dev/null 2>&1
 	mkdir $HOME_DIR/.thumbnails/preview >/dev/null 2>&1
 	mkdir $HOME_DIR/.thumbnails/square >/dev/null 2>&1
@@ -34,49 +107,34 @@ start()
 
 	shopt -s dotglob
 
+	echo -n $"Starting thumbnailing service: "
+	local ret=0
 	for dir in "${MANAGED_DIRS[@]}"; do
-		if ! mount | grep -qw $HOME_DIR/$dir; then
-			echo "Starting in $HOME_DIR/$dir"
-			mkdir -p $INDEXER_HIDDEN_DIR/$dir >/dev/null 2>&1
-			if [[ "$(ls -A $HOME_DIR/$dir)" ]]; then
-				mkdir /tmp/meego-ux-mediafs-$dir >/dev/null 2>&1
-				mv $HOME_DIR/$dir/* /tmp/meego-ux-mediafs-$dir/
-			fi
-			meego-ux-mediafsd -c $CONFIG -p $PLUGINS_DIR -s $INDEXER_HIDDEN_DIR/$dir -m $HOME_DIR/$dir -t $HOME_DIR/.thumbnails
-			mv /tmp/meego-ux-mediafs-$dir/* $HOME_DIR/$dir/ >/dev/null 2>&1
-			rm -rf /tmp/meego-ux-mediafs-$dir >/dev/null 2>&1
+		has_fuse_mount "$HOME_DIR/$dir" && continue
+		echo -n "$dir "
+		if ! start_dir "$dir"; then
+			ret=1
+			stop_dir "$dir"
 		fi
 	done
+	test $ret -eq 0 && success || failure
+	echo
+
+	return $ret
 }
 
 stop()
 {
+	echo -n $"Stopping thumbnailing service: "
+	local ret=0
 	for dir in "${MANAGED_DIRS[@]}"; do
-		echo "Stopping in $HOME_DIR/$dir"
-		if mount | grep -qw $HOME_DIR/$dir; then
-			fusermount -u $HOME_DIR/$dir >/dev/null 2>&1
-		fi
+		echo -n "$dir "
+		stop_dir "$dir"
 	done
+	test $ret -eq 0 && success || failure
+	echo
 
 	# FIXME do we want to unload fuse module too?
-}
-
-restore()
-{
-	if ! ps -e | grep -qw media-preproces; then
-		stop
-	fi
-
-	shopt -s dotglob
-	for dir in "${MANAGED_DIRS[@]}"; do
-		echo "Restoring $HOME_DIR/$dir"
-		if [[ "$(ls -A $INDEXER_HIDDEN_DIR/$dir)" ]]; then
-			mv $INDEXER_HIDDEN_DIR/$dir/* $HOME_DIR/$dir/
-			rm -rf $INDEXER_HIDDEN_DIR/$dir >/dev/null 2>&1
-		fi
-	done
-
-	rm -rf $INDEXER_HIDDEN_DIR
 }
 
 case "$1" in
@@ -97,11 +155,8 @@ case "$1" in
 		#	echo "meego-ux-mediafs is NOT running"
 		#fi
 		;;
-	restore)
-		restore
-		;;
 	*)
-		echo "Usage: $0 {start|stop|reload|status|restore}"
+		echo "Usage: $0 {start|stop|reload|status}"
 		exit 1
 		;;
 esac
