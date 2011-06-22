@@ -561,6 +561,9 @@ thumbnail_make_all_from_data(const struct thumbnailer *ctx,
 	if (image) {
 		r = thumbnail_make_all_from_image(ctx, image, fn);
 		DestroyImage(image);
+	} else {
+		fprintf(stderr, "failed to build image from blob!\n");
+		r = 1;
 	}
 
 	DestroyImageInfo(info);
