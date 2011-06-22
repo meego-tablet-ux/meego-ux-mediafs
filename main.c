@@ -66,6 +66,7 @@ static struct mfuse_callbacks cb = {
 
 int main(int argc, char *argv[])
 {
+	int ret = 0;
 #define FUSE_ARGV_SIZE 16
 	int fuse_argc = 0;
 	char *fuse_argv[FUSE_ARGV_SIZE];
@@ -141,11 +142,13 @@ int main(int argc, char *argv[])
 	strcpy(fuse_argv[++fuse_argc - 1], "nonempty");
 
 	indexer = indexer_init(argv[0], plugin_dir, thumb_dir, conf_file);
-	assert(indexer);
-
-	int ret = mfuse_main(fuse_argc, fuse_argv, source_dir, monitor_dir,
-			&cb, NULL);
-	indexer_free(indexer);
+	if (indexer) {
+		ret = mfuse_main(fuse_argc, fuse_argv, source_dir, monitor_dir,
+				&cb, NULL);
+		indexer_free(indexer);
+	} else {
+		ret = EXIT_FAILURE;
+	}
 
 	for (i = 0; i < FUSE_ARGV_SIZE; ++i)
 		free(fuse_argv[i]);
