@@ -429,7 +429,7 @@ make_thumbnail(const struct config *conf,
 				break;
 			case RESIZE_NONE:
 				fprintf(stderr, "image ratio (%dx%d=%.2f) "
-						"oesn't match requested "
+						"doesn't match requested "
 						"thumbnail ratio (%.2f) "
 						"and cropping isn't allowed!\n",
 						(int) image->columns,
@@ -446,7 +446,7 @@ make_thumbnail(const struct config *conf,
 		if (crop.x || crop.y || crop.width != image->columns ||
 				crop.height != image->rows) {
 #ifdef DEBUG
-			fprintf(stderr, "cropping %dx%d to %dx%d+%d+%d\n",
+			fprintf(stdout, "cropping %dx%d to %dx%d+%d+%d\n",
 					(int) image->columns, (int) image->rows,
 					(int) crop.width, (int) crop.height,
 					(int) crop.x, (int) crop.y);
@@ -495,7 +495,7 @@ make_thumbnail(const struct config *conf,
 			fprintf(stderr, "building filename failed!\n");
 			return 1;
 		}
-		fprintf(stderr, "wrote %s\n", thumb->filename);
+		fprintf(stdout, "wrote %s\n", thumb->filename);
 		/* magick (= output format) is guessed from file suffix */
 
 		r = WriteImage(info, thumb);
@@ -621,7 +621,7 @@ rename_thumbnail(const char *target_dir, const char *old_hash,
 
 	r = rename(old_fn, new_fn);
 	if (r == 0) {
-		fprintf(stderr, "renamed %s to %s\n", old_fn, new_fn);
+		fprintf(stdout, "renamed %s to %s\n", old_fn, new_fn);
 		return 0;
 	} else {
 		fprintf(stderr, "%s: cannot rename to %s: %s\n",
@@ -666,7 +666,7 @@ delete_thumbnail(const char *target_dir, const char *hash, const char *type)
 
 	r = unlink(fn);
 	if (r == 0 || errno == ENOENT) {
-		fprintf(stderr, "deleted %s\n", fn);
+		fprintf(stdout, "deleted %s\n", fn);
 		return 0;
 	} else {
 		fprintf(stderr, "%s: cannot delete: %s\n", fn, strerror(errno));

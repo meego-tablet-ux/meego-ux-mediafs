@@ -51,25 +51,25 @@ init_plugin_real(struct indexer_plugin *indexer_plugin, const char *self)
 
 	plugin->init = dlsym(indexer_plugin->lib, "init");
 	if (! plugin->init) {
-		fprintf(stderr, "no init!\n");
+		fprintf(stderr, "plugin has no init()!\n");
 		return 1;
 	}
 
 	plugin->uninit = dlsym(indexer_plugin->lib, "uninit");
 	if (! plugin->uninit) {
-		fprintf(stderr, "no uninit!\n");
+		fprintf(stderr, "plugin has no uninit()\n");
 		return 1;
 	}
 
 	plugin->ctx = plugin->init(self);
 	if (! plugin->ctx) {
-		fprintf(stderr, "init() failed\n");
+		fprintf(stderr, "plugin init() failed\n");
 		return 1;
 	}
 
 	plugin->get_image = dlsym(indexer_plugin->lib, "get_image");
 	if (! plugin->get_image) {
-		fprintf(stderr, "no get_image!\n");
+		fprintf(stderr, "pluing has no get_image()!\n");
 		plugin->uninit(plugin->ctx);
 		return 1;
 	}
@@ -190,7 +190,7 @@ open_plugins(struct indexer *indexer, const char *self)
 		snprintf(fn, MAXNAMLEN + 3, "%s/%s", dirname, ent->d_name);
 		indexer->plugins[indexer->count] = init_plugin(fn, self);
 		if (indexer->plugins[indexer->count]) {
-			fprintf(stderr, "initialised %s\n", fn);
+			fprintf(stdout, "initialised %s\n", fn);
 			indexer->count++;
 		} else {
 			fprintf(stderr, "failed to init %s\n", ent->d_name);
@@ -428,18 +428,18 @@ try_index_mime(struct indexer *indexer, int *plugins, const char *fn,
 				continue;
 			}
 			plugins[i] = 1;
-			fprintf(stderr, "trying %s (mime type %s matches %s)\n",
+			fprintf(stdout, "trying %s (mime type %s matches %s)\n",
 					indexer->plugins[i]->name, mime, *s);
 
 			if (! plugin->get_image(plugin->ctx, fn, 1024, 1024,
 						reply)) {
-				fprintf(stderr, "processed with %s\n",
+				fprintf(stdout, "processed with %s\n",
 						indexer->plugins[i]->name);
 				return 1;
 			}
 		}
 	}
-	fprintf(stderr, "no parser found for mime type %s\n", mime);
+	fprintf(stdout, "no parser found for mime type %s\n", mime);
 
 	return 0;
 }
@@ -477,17 +477,17 @@ try_index_suffix(struct indexer *indexer, int *plugins, const char *fn,
 			}
 
 			plugins[i] = 1;
-			fprintf(stderr, "trying %s (suffix %s matches %s)\n",
+			fprintf(stdout, "trying %s (suffix %s matches %s)\n",
 					indexer->plugins[i]->name, suffix, *s);
 			if (! plugin->plugin.get_image(plugin->plugin.ctx,
 						fn, 1024, 1024, reply)) {
-				fprintf(stderr, "processed with %s\n",
+				fprintf(stdout, "processed with %s\n",
 						indexer->plugins[i]->name);
 				return 1;
 			}
 		}
 	}
-	fprintf(stderr, "no parser found for file suffix %s\n", suffix);
+	fprintf(stdout, "no parser found for file suffix %s\n", suffix);
 
 	return 0;
 }
@@ -507,9 +507,9 @@ try_index_all_plugins(struct indexer *indexer, int *plugins, const char *fn,
 			continue;
 		}
 		plugins[i] = 1;
-		fprintf(stderr, "trying %s\n", indexer->plugins[i]->name);
+		fprintf(stdout, "trying %s\n", indexer->plugins[i]->name);
 		if (! plugin->get_image(plugin->ctx, fn, 1024, 1024, reply)) {
-			fprintf(stderr, "processed with %s\n",
+			fprintf(stdout, "processed with %s\n",
 					indexer->plugins[i]->name);
 			return 1;
 		}
@@ -528,7 +528,7 @@ indexer_process(struct indexer *indexer, const char *src, const char *dest)
 	int *tried;
 	int ok = 0;
 
-	fprintf(stderr, "processing %s (%s)\n", dest, src);
+	fprintf(stdout, "processing %s (%s)\n", dest, src);
 
 	tried = alloca(indexer->count * sizeof(int));
 	memset(tried, 0, indexer->count * sizeof(int));

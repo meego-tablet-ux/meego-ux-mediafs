@@ -170,7 +170,7 @@ grab_frame(struct plugin_context *ctx)
 	sink = ctx->grabsink;
 
 	/* pull-preroll may hang */
-	fprintf(stderr, "%s: getting buffer\n", SELF);
+	fprintf(stdout, "%s: getting buffer\n", SELF);
 	g_signal_emit_by_name(sink, "pull-preroll", &internal->buffer, NULL);
 
 	if (internal->buffer) {
@@ -212,14 +212,14 @@ handoff_cb(GstElement *bin, GstBuffer *buffer, GstPad *pad, gpointer data)
 	struct plugin_context *ctx = data;
 	GstCaps *caps;
 
-	fprintf(stderr, "%s: %s\n", SELF, __FUNCTION__);
+	fprintf(stdout, "%s: %s\n", SELF, __FUNCTION__);
 
 	if (ctx->grab_done == GRAB_FRAME_GOOD) {
-		fprintf(stderr, "%s: grabbed two frames already\n", SELF);
+		fprintf(stdout, "%s: grabbed two frames already\n", SELF);
 		return;
 	}
 	if (! ctx->seek_done) {
-		fprintf(stderr, "%s: warning: video not seeked!\n", SELF);
+		fprintf(stdout, "%s: warning: video not seeked!\n", SELF);
 		if (ctx->grab_done == GRAB_FRAME_FIRST) {
 			return;
 		}
@@ -317,13 +317,13 @@ stream_ready(struct plugin_context *ctx)
 		if (gst_element_query_duration(ctx->pipeline, &fmt, &len)) {
 			pos = len * 1 / 10;
 		} else {
-			fprintf(stderr, "%s: media length query failed\n",
+			fprintf(stdout, "%s: media length query failed\n",
 					SELF);
 			len = 0;
 			pos = 5 * GST_SECOND;
 		}
 
-		fprintf(stderr, "%s: trying to seek to %.1f/%.1f sec\n", SELF,
+		fprintf(stdout, "%s: trying to seek to %.1f/%.1f sec\n", SELF,
 				(double) pos / GST_SECOND,
 				(double) len / GST_SECOND);
 		r = gst_element_seek(ctx->pipeline, 1.0, GST_FORMAT_TIME,
@@ -332,7 +332,7 @@ stream_ready(struct plugin_context *ctx)
 				GST_SEEK_TYPE_SET, pos,
 				GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
 		if (! r ) {
-			fprintf(stderr, "%s: seek failed\n", SELF);
+			fprintf(stdout, "%s: seek failed\n", SELF);
 		} else {
 			ctx->seek_done = TRUE;
 		}
@@ -364,12 +364,12 @@ autoplug_continue_cb(GstElement *bin, GstPad *pad, GstCaps *caps,
 		if (select_streams == FALSE
 				|| g_strrstr(gst_structure_get_name(str),
 					"video")) {
-			fprintf(stderr, "%s: accepted stream[%d]: %s\n", SELF,
+			fprintf(stdout, "%s: accepted stream[%d]: %s\n", SELF,
 					i, gst_structure_get_name(str));
 
 			return TRUE;
 		} else {
-			fprintf(stderr, "%s: ignored stream[%d]: %s\n", SELF,
+			fprintf(stdout, "%s: ignored stream[%d]: %s\n", SELF,
 					i, gst_structure_get_name(str));
 		}
 	}
@@ -388,7 +388,7 @@ pad_added_cb(GstElement *decodebin, GstPad *pad, gpointer data)
 	/* check media type */
 	caps = gst_pad_get_caps(pad);
 	if (! caps) {
-		fprintf(stderr, "%s: pad added with no caps in!\n", SELF);
+		fprintf(stdout, "%s: pad added with no caps in!\n", SELF);
 		return;
 	}
 
@@ -437,7 +437,7 @@ bus_state_changed_cb(GstBus *bus, GstMessage *message, gpointer data)
 	GstState state, pending;
 	GstStateChangeReturn ret;
 
-	fprintf(stderr, "%s: bus state changed: %s\n", SELF,
+	fprintf(stdout, "%s: bus state changed: %s\n", SELF,
 			GST_MESSAGE_SRC_NAME(message));
 	/* TODO
 	 * gst_element_get_state() here causes a small delay. If we don't
@@ -448,7 +448,7 @@ bus_state_changed_cb(GstBus *bus, GstMessage *message, gpointer data)
 	ret = gst_element_get_state(ctx->pipeline,
 			&state, &pending, GST_SECOND / 10);
 	if (state == GST_STATE_PAUSED) {
-		fprintf(stderr, "%s: stream ready\n", SELF);
+		fprintf(stdout, "%s: stream ready\n", SELF);
 		stream_ready(ctx);
 	}
 }
@@ -476,7 +476,7 @@ static void
 bus_eos_cb(GstBus *bus, GstMessage *message, gpointer data)
 {
 	struct plugin_context *ctx = data;
-	fprintf(stderr, "%s: end of stream\n", SELF);
+	fprintf(stdout, "%s: end of stream\n", SELF);
 
 	g_main_loop_quit(ctx->loop);
 }
@@ -487,7 +487,7 @@ bus_eos_cb(GstBus *bus, GstMessage *message, gpointer data)
 static void
 bus_message_cb(GstBus *bus, GstMessage *message, gpointer data)
 {
-	fprintf(stderr, "%s: bus message: %s\n", SELF,
+	fprintf(stdout, "%s: bus message: %s\n", SELF,
 			GST_MESSAGE_TYPE_NAME(message));
 }
 #endif
