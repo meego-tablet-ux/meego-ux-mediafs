@@ -137,8 +137,6 @@ int main(int argc, char *argv[])
 	strcpy(fuse_argv[++fuse_argc - 1], "subdir=");
 	strcat(fuse_argv[fuse_argc - 1], source_dir);
 	strcpy(fuse_argv[++fuse_argc - 1], "-o");
-	strcpy(fuse_argv[++fuse_argc - 1], "allow_other");
-	strcpy(fuse_argv[++fuse_argc - 1], "-o");
 	strcpy(fuse_argv[++fuse_argc - 1], "nonempty");
 
 	indexer = indexer_init(argv[0], plugin_dir, thumb_dir, conf_file);

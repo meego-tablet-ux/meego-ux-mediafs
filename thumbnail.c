@@ -463,10 +463,10 @@ make_thumbnail(const struct config *conf,
 	if (conf->ratio <= 0.0) {
 		/* preserve ratio */
 		if (use->columns > use->rows) {
-			width = conf->max_width_px;
+			width = min(use->columns, conf->max_width_px);
 			height = width * use->rows / use->columns;
 		} else {
-			height = conf->max_height_px;
+			height = min(use->rows, conf->max_height_px);
 			width = height * use->columns / use->rows;
 		}
 	} else {
